@@ -1,0 +1,35 @@
+{
+  "name": "jsonld-utils",
+  "version": "1.0.0",
+  "description": "Contains a set of utilities for creating access jsonld graphs",
+  "main": "none",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/niceoneallround/jsonld-utils.git"
+  },
+  "keywords": [
+    "jsonld"
+  ],
+  "author": "rich@webshield.io",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/niceoneallround/jsonld-utils/issues"
+  },
+  "homepage": "https://github.com/niceoneallround/jsonld-utils#readme",
+  "devDependencies": {
+    "grunt": "0.x.x",
+    "grunt-buddyjs": "^0.1.0",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-jscs": "^0.8.0",
+    "grunt-mocha-test": "0.x.x",
+    "grunt-shell": "^1.1.1",
+    "mocha": "1.x.x",
+    "should": "^7.1.0"
+  },
+  "dependencies": {
+    "node-uuid": "^1.4.3"
+  }
+}
