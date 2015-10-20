@@ -3,18 +3,21 @@
 //
 // Test JSONLD utils
 //
-var should = require('should'),
-    jsonldUtils = require('../lib/jldUtils');
+var assert = require('assert'),
+    should = require('should'),
+    jsonldUtils = require('../lib/jldUtils'),
+    util = require('util');
 
 describe('jsonld utils tests', function() {
   'use strict';
 
   var ITEMS = 'http://test.schema.blah.blah.com/prop#items',
       API_T = {
-        Assertion: 'http://a/type#Assertion',
-        DatasetEntity: 'http://a/type#DatasetEntity',
-        Error: 'http://a/type#Error',
-        SvcRequest: 'http://a/type#SvcRequest'
+        Assertion: 'http://test/type#Assertion',
+        DatasetData: 'http://test/type#DatasetData',
+        DatasetEntity: 'http://test/type#DatasetEntity',
+        Error: 'http://test/type#Error',
+        SvcRequest: 'http://test/type#SvcRequest'
       };
 
   describe('1 getO tests', function() {
@@ -200,7 +203,31 @@ describe('jsonld utils tests', function() {
       node['@type'].should.containEql(API_T.DatasetData);
       node['@type'].should.containEql(API_T.DatasetEntity);
     });
+  }); // describe 6
 
-  });
+  describe('7 createNode tests', function() {
+
+    var id = 'http://test.webshield.io/27272';
+
+    it('7.1 create a node with single type', function() {
+      var  node = {};
+      node = jsonldUtils.createNode(id, API_T.Assertion);
+      node.should.have.property('@id', id);
+      node.should.have.property('@type');
+      assert(jsonldUtils.isType(node, API_T.Assertion), util.format('node does not have API_T:Assertion:%j', node));
+      assert(Array.isArray(node['@type']), '@type is not an array');
+    });
+
+    it('7.2 create a node with an array of types', function() {
+      var  node = {};
+      node = jsonldUtils.createNode(id, [API_T.Assertion, API_T.DatasetData]);
+      node.should.have.property('@id', id);
+      node.should.have.property('@type');
+      assert(Array.isArray(node['@type']), '@type is not an array');
+      assert(jsonldUtils.isType(node, API_T.Assertion), util.format('node does not have API_T:Assertion:%j', node));
+      assert(jsonldUtils.isType(node, API_T.DatasetData), util.format('node does not have API_T:DatasetData:%j', node));
+    });
+
+  }); // describe 7
 
 });
