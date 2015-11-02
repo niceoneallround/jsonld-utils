@@ -230,4 +230,15 @@ describe('jsonld utils tests', function() {
 
   }); // describe 7
 
+  describe('8 createV tests', function() {
+
+    it('8.1 create a value', function() {
+      var  v = {};
+      v = jsonldUtils.createV({value: '23', type: ['a']});
+      v.should.have.property('@value', '23');
+      v.should.have.property('@type', ['a']);
+    });
+
+  }); // describe 7
+
 });
