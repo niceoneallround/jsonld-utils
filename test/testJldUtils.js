@@ -50,12 +50,12 @@ describe('jsonld utils tests', function() {
       (jsonldUtils.getV(doc.prop1)).should.equal('id1');
     });
 
-    it('2.2 should handle an object with @value', function() {
+    it('2.2 should handle an expanded @value not in an array', function() {
       var  doc = {prop1: {'@value': '23'}};
       (jsonldUtils.getV(doc.prop1)).should.equal('23');
     });
 
-    it('2.3 should handle an array of 1 object with @value', function() {
+    it('2.3 should handle an expanded @value in an array', function() {
       var  doc = {prop1: [{'@value': '23'}]};
       (jsonldUtils.getV(doc.prop1)).should.equal('23');
     });
@@ -66,6 +66,11 @@ describe('jsonld utils tests', function() {
 
     it('2.5 should handle an undefined value and return null', function() {
       var  doc = {prop1: null};
+      (jsonldUtils.getV(doc.prop2) === null).should.equal(true);
+    });
+
+    it('2.6 should handle an empty array', function() {
+      var  doc = {prop1: []};
       (jsonldUtils.getV(doc.prop2) === null).should.equal(true);
     });
   });
