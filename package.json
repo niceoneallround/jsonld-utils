@@ -27,8 +27,8 @@
     "grunt-jscs": "^0.8.0",
     "grunt-mocha-test": "0.x.x",
     "grunt-shell": "^1.1.1",
-    "mocha": "1.x.x",
-    "should": "^7.1.0"
+    "mocha": "^2.x.x",
+    "should": "^8.1.0"
   },
   "dependencies": {
     "node-uuid": "^1.4.3"
