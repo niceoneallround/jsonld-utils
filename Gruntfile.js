@@ -50,7 +50,10 @@ module.exports = function(grunt) {
     jscs: {
       src: ['lib', 'lib/*.js', '*.js', 'test/*.js'],
       options: {
-        preset: 'airbnb'
+        preset: 'airbnb',
+        requireSpacesInsideObjectBrackets: false,
+        disallowMultipleVarDecl: false,
+        requireTrailingComma: false,
       }
     }
 

@@ -17,13 +17,14 @@ describe('jsonld utils tests', function() {
         DatasetData: 'http://test/type#DatasetData',
         DatasetEntity: 'http://test/type#DatasetEntity',
         Error: 'http://test/type#Error',
-        SvcRequest: 'http://test/type#SvcRequest'
+        SvcRequest: 'http://test/type#SvcRequest',
       };
 
   describe('1 getO tests', function() {
 
     it('1.1 should handle a plain object- compact', function() {
-      var  obj = {prop1: 'id1' }, doc = obj;
+      var  obj = {prop1: 'id1' },
+          doc = obj;
       (jsonldUtils.getO(doc)).should.equal(obj);
     });
 
@@ -160,7 +161,8 @@ describe('jsonld utils tests', function() {
     });
 
     it('6.2 add arrays type when node has no type property', function() {
-      var  node = {}, types = [API_T.Assertion, API_T.DatasetData];
+      var node = {},
+        types = [API_T.Assertion, API_T.DatasetData];
       jsonldUtils.addType2Node(node, types);
       node.should.have.property('@type');
       node['@type'].should.containEql(API_T.Assertion);
@@ -168,7 +170,7 @@ describe('jsonld utils tests', function() {
     });
 
     it('6.3 add single type when node has an instance type property', function() {
-      var  node = {};
+      var node = {};
 
       node['@type'] = API_T.DatasetEntity;
       jsonldUtils.addType2Node(node, API_T.Assertion);
@@ -178,7 +180,7 @@ describe('jsonld utils tests', function() {
     });
 
     it('6.4 add single type when node has an array type property', function() {
-      var  node = {};
+      var node = {};
 
       node['@type'] = [API_T.DatasetEntity];
       jsonldUtils.addType2Node(node, API_T.Assertion);
@@ -188,7 +190,8 @@ describe('jsonld utils tests', function() {
     });
 
     it('6.5 add array type when node has an instance type property', function() {
-      var  node = {}, types = [API_T.Assertion, API_T.DatasetData];
+      var node = {},
+        types = [API_T.Assertion, API_T.DatasetData];
 
       node['@type'] = API_T.DatasetEntity;
       jsonldUtils.addType2Node(node, types);
@@ -199,7 +202,7 @@ describe('jsonld utils tests', function() {
     });
 
     it('6.6 add single type when node has an array type property', function() {
-      var  node = {}, types = [API_T.Assertion, API_T.DatasetData];
+      var node = {}, types = [API_T.Assertion, API_T.DatasetData];
 
       node['@type'] = [API_T.DatasetEntity];
       jsonldUtils.addType2Node(node, types);
@@ -215,7 +218,7 @@ describe('jsonld utils tests', function() {
     var id = 'http://test.webshield.io/27272';
 
     it('7.1 create a node with single type', function() {
-      var  node = {};
+      var node = {};
       node = jsonldUtils.createNode(id, API_T.Assertion);
       node.should.have.property('@id', id);
       node.should.have.property('@type');
@@ -224,7 +227,7 @@ describe('jsonld utils tests', function() {
     });
 
     it('7.2 create a node with an array of types', function() {
-      var  node = {};
+      var node = {};
       node = jsonldUtils.createNode(id, [API_T.Assertion, API_T.DatasetData]);
       node.should.have.property('@id', id);
       node.should.have.property('@type');
@@ -238,7 +241,7 @@ describe('jsonld utils tests', function() {
   describe('8 createV tests', function() {
 
     it('8.1 create a value', function() {
-      var  v = {};
+      var v = {};
       v = jsonldUtils.createV({value: '23', type: ['a']});
       v.should.have.property('@value', '23');
       v.should.have.property('@type', ['a']);

@@ -24,10 +24,10 @@
     "grunt": "0.x.x",
     "grunt-buddyjs": "^0.1.0",
     "grunt-contrib-jshint": "^0.10.0",
-    "grunt-jscs": "^0.8.0",
+    "grunt-jscs": "^2.0.0",
     "grunt-mocha-test": "0.x.x",
     "grunt-shell": "^1.1.1",
-    "mocha": "^2.x.x",
+    "mocha": "^2.0.0",
     "should": "^8.1.0"
   },
   "dependencies": {
