@@ -2,7 +2,7 @@
 // Assume that grunt-cli has been installed at the npm -g level, so can run grunt
 //
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
   'use strict';
 
   grunt.initConfig({
@@ -51,7 +51,6 @@ module.exports = function(grunt) {
       src: ['lib', 'lib/*.js', '*.js', 'test/*.js'],
       options: {
         preset: 'airbnb',
-        requireSpacesInsideObjectBrackets: false,
         disallowMultipleVarDecl: false,
         requireTrailingComma: false,
       }
