@@ -28,7 +28,8 @@ module.exports = function (grunt) {
         undef: true,
         unused: true,
         eqeqeq: true,
-        strict: true
+        strict: true,
+        esversion: 6
       }
     },
 
