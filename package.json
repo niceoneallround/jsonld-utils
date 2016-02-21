@@ -19,7 +19,9 @@
     "url": "https://github.com/niceoneallround/jsonld-utils/issues"
   },
   "homepage": "https://github.com/niceoneallround/jsonld-utils#readme",
-  "engine": "node 5.4.x",
+  "engines": {
+    "node": ">=5.6.x"
+  },
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-buddyjs": "^0.1.0",
