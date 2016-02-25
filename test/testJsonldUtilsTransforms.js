@@ -71,7 +71,7 @@ describe('jsonld utils fetch objects', function () {
       return p2;
     }); // 1.1
 
-    it('1.2 findObjects with two type ', function () {
+    it('1.2 findObjects passing two requested types', function () {
       var p1, p2;
       p1 = jsonldUtils.findObjectsPromise(doc, [context.Subject, context.SubjectIgnore]);
       p2 = p1.then(
