@@ -49,7 +49,7 @@ describe('jsonld utils fetch objects', function () {
 
     it('1.1 findObjects with one type ', function () {
       var p1, p2;
-      p1 = jsonldUtils.findObjects(doc, context.Subject);
+      p1 = jsonldUtils.findObjectsPromise(doc, context.Subject);
       p2 = p1.then(
         function (objects) {
           console.log('1.1 findObjects result: %j', objects);
@@ -73,7 +73,7 @@ describe('jsonld utils fetch objects', function () {
 
     it('1.2 findObjects with two type ', function () {
       var p1, p2;
-      p1 = jsonldUtils.findObjects(doc, [context.Subject, context.SubjectIgnore]);
+      p1 = jsonldUtils.findObjectsPromise(doc, [context.Subject, context.SubjectIgnore]);
       p2 = p1.then(
         function (objects) {
           console.log('1.2 findObjects result: %j', objects);
