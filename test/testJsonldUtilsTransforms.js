@@ -11,15 +11,20 @@ var assert = require('assert'),
 describe('jsonld utils fetch objects', function () {
   'use strict';
 
-  var context = {
+  var context, optionsMap, doc;
+
+  context = {
     Address:  'http://acme.schema.webshield.io/type#Address',
     Subject: 'http://acme.schema.webshield.io/type#Subject',
     SubjectIgnore: 'http://acme.schema.webshield.io/type#SubjectIgnore',
     address: 'http://acme.schema.webshield.io/prop#address',
     name: 'http://acme.schema.webshield.io/prop#name'
-  },
+  };
+
+  optionsMap = new Map();
+  optionsMap.set('@context', context);
+
   doc = {
-    '@context': context,
     '@graph':[
       {
         '@id': 'http://id.webshield.io/acme/com/1',
@@ -49,7 +54,7 @@ describe('jsonld utils fetch objects', function () {
   describe('1 test finding objects of type in graph', function () {
 
     it('1.1 findObjects with one type ', function () {
-      return jsonldUtils.promises.findObjects(doc, context.Subject)
+      return jsonldUtils.promises.findObjects(doc, context.Subject, optionsMap)
         .then(
           function (objects) {
             //console.log('1.1 findObjects result: %j', objects);
@@ -57,12 +62,13 @@ describe('jsonld utils fetch objects', function () {
             objects.should.have.property('@type', context.Subject);
             objects.should.have.property(context.address);
             objects.should.have.property(context.name);
+            doc.should.not.have.property('@context');
           }
         );
     }); // 1.1
 
     it('1.2 findObjects passing two requested types', function () {
-      return jsonldUtils.promises.findObjects(doc, [context.Subject, context.SubjectIgnore])
+      return jsonldUtils.promises.findObjects(doc, [context.Subject, context.SubjectIgnore], optionsMap)
         .then(
           function (objects) {
             //console.log('1.2 findObjects result: %j', objects);
@@ -72,7 +78,7 @@ describe('jsonld utils fetch objects', function () {
     }); // 1.2
 
     it('1.3 findObjects pass non existent type', function () {
-      return jsonldUtils.promises.findObjects(doc, ['bogus'])
+      return jsonldUtils.promises.findObjects(doc, ['bogus'], optionsMap)
         .then(
           function (objects) {
             assert(!objects, util.format('no object should be found for bogus type:%j', objects));
@@ -87,7 +93,7 @@ describe('jsonld utils fetch objects', function () {
         '@type': 'Subject',
          name: 'rich' };
 
-      return jsonldUtils.promises.findObjects(ldoc, ['bogus'])
+      return jsonldUtils.promises.findObjects(ldoc, ['bogus'], optionsMap)
         .then(
           function (objects) {
             assert(!objects, util.format('no object should be found for bogus type:%j', objects));
@@ -102,7 +108,7 @@ describe('jsonld utils fetch objects', function () {
         '@type': 'Subject',
         name: 'rich' };
 
-      return jsonldUtils.promises.findObjects(ldoc, context.Subject)
+      return jsonldUtils.promises.findObjects(ldoc, context.Subject, optionsMap)
         .then(
           function (objects) {
             assert(objects, util.format('object should be found for type:%j', objects));
