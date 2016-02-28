@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/niceoneallround/jsonld-utils#readme",
   "engines": {
-    "node": ">=5.6.x"
+    "node": ">=5.x.x"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
