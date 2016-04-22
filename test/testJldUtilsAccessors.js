@@ -41,7 +41,6 @@ describe('jsonld utils tests', function () {
       var  doc = { prop1: null };
       (jsonldUtils.getO(doc.prop2) === null).should.equal(true);
     });
-
   });
 
   describe('2 getV tests', function () {
@@ -73,6 +72,12 @@ describe('jsonld utils tests', function () {
     it('2.6 should handle an empty array', function () {
       var  doc = { prop1: [] };
       (jsonldUtils.getV(doc.prop2) === null).should.equal(true);
+    });
+
+    it('2.7 check should work with other paths to accessors', function () {
+      var  doc = { prop1: 'id1' };
+      (jsonldUtils.npUtils.getV(doc, 'prop1')).should.equal('id1');
+      (jsonldUtils.pUtils.getV(doc.prop1)).should.equal('id1');
     });
   });
 
