@@ -1,6 +1,6 @@
 {
   "name": "jsonld-utils",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Contains a set of utilities for creating access jsonld graphs",
   "main": "none",
   "scripts": {

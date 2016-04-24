@@ -251,7 +251,27 @@ describe('jsonld utils tests', function () {
       v.should.have.property('@value', '23');
       v.should.have.property('@type', ['a']);
     });
+  }); // describe 8
 
-  }); // describe 7
+  describe('9 getId tests', function () {
+
+    it('9.1 get id from an object', function () {
+      var id = { '@id': '23' }, node;
+      node = { prop: id };
+      jsonldUtils.npUtils.getId(node, 'prop').should.be.equal('23');
+    });
+
+    it('9.2 get id from a value', function () {
+      var id = '23', node;
+      node = { prop: id };
+      jsonldUtils.npUtils.getId(node, 'prop').should.be.equal('23');
+    });
+
+    it('3.2 get id from a typed value', function () {
+      var id = jsonldUtils.createV({ value: '23', type: ['a'] }), node;
+      node = { prop: id };
+      jsonldUtils.npUtils.getId(node, 'prop').should.be.equal('23');
+    });
+  }); // describe 9
 
 });
