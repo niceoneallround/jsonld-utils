@@ -25,7 +25,7 @@ describe('jsonld utils fetch objects', function () {
   optionsMap.set('@context', context);
 
   doc = {
-    '@graph':[
+    '@graph': [
       {
         '@id': 'http://id.webshield.io/acme/com/1',
         '@type': 'Subject',
@@ -87,11 +87,9 @@ describe('jsonld utils fetch objects', function () {
     }); // 1.3
 
     it('1.4 findObjects pass non existent type with just a simple object', function () {
-      var ldoc = {
-        '@context': context,
-        '@id': '_:23',
-        '@type': 'Subject',
-         name: 'rich' };
+      let ldoc = {
+        '@context': context, '@id': '_:23',
+        '@type': 'Subject', name: 'rich' };
 
       return jsonldUtils.promises.findObjects(ldoc, ['bogus'], optionsMap)
         .then(

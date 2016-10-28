@@ -13,7 +13,7 @@ var assert = require('assert'),
 describe('jsonld npm library learnings', function () {
   'use strict';
 
-  var context = {
+  let context = {
     Address:  'http://acme.schema.webshield.io/type#Address',
     Subject: 'http://acme.schema.webshield.io/type#Subject',
     SubjectIgnore: 'http://acme.schema.webshield.io/type#SubjectIgnore',
@@ -22,7 +22,7 @@ describe('jsonld npm library learnings', function () {
   },
   doc = {
     '@context': context,
-    '@graph':[
+    '@graph': [
       {
         '@id': 'http://id.webshield.io/acme/com/1',
         '@type': 'Subject',
@@ -60,8 +60,7 @@ describe('jsonld npm library learnings', function () {
 
     // note how return the promise and do not use a done method :)
     it('1.1 expand using a promise', function () {
-      var p1;
-      p1 = new Promise(function (resolve, reject) {
+      let p1 = new Promise(function (resolve, reject) {
         console.log('setting up promise');
         jsonld.expand(doc, function (err, expanded) {
           if (err) {
@@ -96,9 +95,7 @@ describe('jsonld npm library learnings', function () {
     }); // 1.1
 
     it('1.2 expand using jsonld promises', function () {
-      var p1;
-
-      p1 = jsonld.promises.expand(doc);
+      let p1 = jsonld.promises.expand(doc);
       p1.then(
         function (expanded) {
           console.log('expanded 1.2: %j', expanded);
@@ -117,10 +114,10 @@ describe('jsonld npm library learnings', function () {
 
   describe('2 framing tests base is not a graph', function () {
 
-    var expandedDoc;
+    let expandedDoc;
 
     before(function () {
-      var p1 = jsonld.promises.expand(doc);
+      let p1 = jsonld.promises.expand(doc);
       p1.then(
         function (expanded) {
           console.log('2. framing - before - expanded : %j', expanded);
@@ -164,10 +161,10 @@ describe('jsonld npm library learnings', function () {
 
   describe('3 framing tests base is a named graph', function () {
 
-    var namedGraph = {
+    let namedGraph = {
       '@context': context,
       '@id': 'http://id.webshield.io/nameGraph/1',
-      '@graph':[
+      '@graph': [
         {
           '@id': 'http://id.webshield.io/acme/com/1',
           '@type': 'Subject',

@@ -18,7 +18,7 @@ var assert = require('assert'),
 describe('jsonld framing library learnings', function () {
   'use strict';
 
-  var context = {
+  let context = {
     Address:  'http://acme.schema.webshield.io/type#Address',
     Subject: 'http://acme.schema.webshield.io/type#Subject',
     SubjectType2: 'http://acme.schema.webshield.io/type#SubjectType2',
@@ -54,7 +54,7 @@ describe('jsonld framing library learnings', function () {
   },*/
   graphEmbeddedSubject = {
     '@context': context,
-    '@graph':[
+    '@graph': [
       {
         '@id': 'http://id.webshield.io/acme/com/3',
         '@type': 'Subject',

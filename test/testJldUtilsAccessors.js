@@ -3,10 +3,10 @@
 //
 // Test JSONLD utils
 //
-var assert = require('assert'),
-    should = require('should'),
-    jsonldUtils = require('../lib/jldUtils'),
-    util = require('util');
+const assert = require('assert');
+const should = require('should');
+const jsonldUtils = require('../lib/jldUtils');
+const util = require('util');
 
 describe('jsonld utils tests', function () {
   'use strict';
@@ -107,6 +107,17 @@ describe('jsonld utils tests', function () {
       output.length.should.be.equal(1);
     });
 
+    it('3.4 should support get array on pUtils, and npUtils', function () {
+      let input = {}, output;
+      input[ITEMS] = ['a', 'b', 'c'];
+
+      output = jsonldUtils.pUtils.getArray(input, ITEMS);
+      output.length.should.be.equal(3);
+
+      output = jsonldUtils.npUtils.getArray(input, ITEMS);
+      output.length.should.be.equal(3);
+    });
+
   });
 
   describe('4 isType tests', function () {
@@ -131,6 +142,13 @@ describe('jsonld utils tests', function () {
       obj['@type'] = API_T.Error;
       (jsonldUtils.isType(obj, API_T.Error)).should.equal(true);
       (jsonldUtils.isType(obj, 'http://a.com/bogus')).should.equal(false);
+    });
+
+    it('4.4 should support isType on pUtils, and npUtils', function () {
+      var  obj = {};
+      obj['@type'] = [API_T.SvcRequest];
+      (jsonldUtils.pUtils.isType(obj, API_T.SvcRequest)).should.equal(true);
+      (jsonldUtils.npUtils.isType(obj, API_T.Error)).should.equal(false);
     });
   });
 
