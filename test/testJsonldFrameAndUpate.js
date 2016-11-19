@@ -20,6 +20,7 @@ let context = {
   etype: 'http://acme.schema.webshield.io/prop#etype',
   line1: 'http://acme.schema.webshield.io/prop#line1',
   name: 'http://acme.schema.webshield.io/prop#name',
+  spare: 'http://acme.schema.webshield.io/prop#spare',
   child: 'http://acme.schema.webshield.io/prop#child',
   v: 'http://acme.schema.webshield.io/prop#v',
 
@@ -47,6 +48,7 @@ let graphEmbeddedSubject = {
           '@type': 'EmbeddedSubject',
           description: 'embedded subject not a privacy graph',
           name: 'child_tasha',
+          spare: '1',
           address: {
             '@type': ['Address'],
             line1: 'address line 2'
@@ -67,6 +69,10 @@ let graphEmbeddedSubject = {
           '@type': ['EmbeddedSubject', 'PrivacyGraph'],
           description: 'embedded subject not a privacy graph',
           name: 'child_tasha',
+          spare: {
+            '@type': 'https://md.pn.id.webshield.io/paction/com/me#1',
+            v: 'cipher-text1'
+          },
           address: {
             '@type': ['Address'],
             line1: 'p_address line 2'
@@ -100,21 +106,21 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
     // this will find all nodes that have subject in the type - do not seem
     // to be able to filter by subject and privacy graph
     const frame = {
-          '@embed': false, // IMPORTANT this will cause the result to just be ids
+          '@embed': true, // IMPORTANT this will cause the result to just be ids
           '@type': ['http://acme.schema.webshield.io/type#Subject']
         };
 
     return jsonld.promises.frame(expandedDoc, frame)
       .then(function (frameResult) {
 
-        //console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
+        console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
 
         frameResult.should.have.property('@graph');
 
         let nodes = frameResult['@graph'];
         nodes.length.should.be.equal(2);
         nodes[0].should.have.property('@id');
-        nodes[0].should.not.have.property('@type'); // check just an id
+        nodes[0].should.have.property('@type'); // check just an id
 
       });
   }); // 1.1
@@ -133,7 +139,7 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
     return jsonld.promises.frame(expandedDoc, frame)
       .then(function (frameResult) {
 
-        //console.log(JSON.stringify(frameResult, null, 2));
+        console.log('***FRAMED with EMBEDDED:%s', JSON.stringify(frameResult, null, 2));
 
         frameResult.should.have.property('@graph');
 
