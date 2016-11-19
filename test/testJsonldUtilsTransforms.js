@@ -8,12 +8,10 @@ var assert = require('assert'),
     jsonldUtils = require('../lib/jldUtils'),
     util = require('util');
 
-describe('jsonld utils fetch objects', function () {
+describe('FIND jsonld utils fetch objects', function () {
   'use strict';
 
-  var context, optionsMap, doc;
-
-  context = {
+  const context = {
     Address:  'http://acme.schema.webshield.io/type#Address',
     Subject: 'http://acme.schema.webshield.io/type#Subject',
     SubjectIgnore: 'http://acme.schema.webshield.io/type#SubjectIgnore',
@@ -21,10 +19,10 @@ describe('jsonld utils fetch objects', function () {
     name: 'http://acme.schema.webshield.io/prop#name'
   };
 
-  optionsMap = new Map();
+  let optionsMap = new Map();
   optionsMap.set('@context', context);
 
-  doc = {
+  const doc = {
     '@graph': [
       {
         '@id': 'http://id.webshield.io/acme/com/1',
@@ -87,7 +85,7 @@ describe('jsonld utils fetch objects', function () {
     }); // 1.3
 
     it('1.4 findObjects pass non existent type with just a simple object', function () {
-      let ldoc = {
+      const ldoc = {
         '@context': context, '@id': '_:23',
         '@type': 'Subject', name: 'rich' };
 
@@ -100,7 +98,7 @@ describe('jsonld utils fetch objects', function () {
     }); // 1.4
 
     it('1.5 findObjects pass valid type with just a simple object', function () {
-      var ldoc = {
+      const ldoc = {
         '@context': context,
         '@id': '_:23',
         '@type': 'Subject',

@@ -6,6 +6,7 @@ const istanbul = require('gulp-istanbul');
 const jshint = require('gulp-jshint');
 const jscs = require('gulp-jscs');
 const mocha = require('gulp-mocha');
+const yargs = require('yargs');
 
 const SOURCE_CODE = ['./lib/*.js'];
 const TESTS = ['./test/*.js'];
@@ -48,7 +49,7 @@ gulp.task('pre-test', function () {
 
 gulp.task('test', ['pre-test', 'pp'], function () {
   return gulp.src(TESTS)
-    .pipe(mocha())
+    .pipe(mocha({ grep: yargs.argv.grep }))
     .pipe(istanbul.writeReports())
     .pipe(istanbul.enforceThresholds({ thresholds: { statements: 80, lines: 80, functions: 80, branches: 40 } }));
 });

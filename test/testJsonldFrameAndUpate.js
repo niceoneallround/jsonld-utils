@@ -8,153 +8,545 @@
 // - looks like jsonld makes a copy when framing so the update is to the
 //   new node, so need to replace node in the graph. Thinking of flattening
 //
-var assert = require('assert'),
-    should = require('should'),
-    jsonld = require('jsonld'),
+const assert = require('assert');
+const should = require('should');
+const jsonld = require('jsonld');
+const JSONLDUtils = require('../lib/jldUtils').npUtils;
+const util = require('util');
 
-    //jsonldUtils = require('../lib/jldUtils'),
-    util = require('util');
+let context = {
+  address: 'http://acme.schema.webshield.io/prop#address',
+  description: 'https://pn.schema.webshield.io/prop#description',
+  etype: 'http://acme.schema.webshield.io/prop#etype',
+  line1: 'http://acme.schema.webshield.io/prop#line1',
+  name: 'http://acme.schema.webshield.io/prop#name',
+  child: 'http://acme.schema.webshield.io/prop#child',
+  v: 'http://acme.schema.webshield.io/prop#v',
 
-describe('jsonld framing library learnings', function () {
-  'use strict';
+  Address:  'http://acme.schema.webshield.io/type#Address',
+  Subject: 'http://acme.schema.webshield.io/type#Subject',
+  EmbeddedSubject: 'http://acme.schema.webshield.io/type#EmbeddedSubject',
+  SubjectIgnore: 'http://acme.schema.webshield.io/type#SubjectIgnore',
+  PrivacyGraph: 'https://pn.schema.webshield.io/type#PrivacyGraph',
+};
 
-  let context = {
-    Address:  'http://acme.schema.webshield.io/type#Address',
-    Subject: 'http://acme.schema.webshield.io/type#Subject',
-    SubjectType2: 'http://acme.schema.webshield.io/type#SubjectType2',
-    SubjectIgnore: 'http://acme.schema.webshield.io/type#SubjectIgnore',
-    address: 'http://acme.schema.webshield.io/prop#address',
-    name: 'http://acme.schema.webshield.io/prop#name',
-    child: 'http://acme.schema.webshield.io/prop#child'
-  },
-  /*graphArrayOfSubjects = {
+let graphEmbeddedSubject = {
     '@context': context,
-    '@graph':[
+    '@graph': [
       {
         '@id': 'http://id.webshield.io/acme/com/1',
         '@type': 'Subject',
         name: 'rich',
+        description: 'subject, not a privacy graph',
         address: {
-          '@id': '_:ba1',
           '@type': ['Address'],
-          name: 'address line 1'
-        }
-      },
-      {
-        '@id': 'http://id.webshield.io/acme/com/2',
-        '@type': 'SubjectIgnore',
-        name: 'bob',
-        address: {
-          '@id': '_:ba1',
-          '@type': ['Address'],
-          name: 'address line 1'
-        }
-      }
-    ]
-  },*/
-  graphEmbeddedSubject = {
-    '@context': context,
-    '@graph': [
-      {
-        '@id': 'http://id.webshield.io/acme/com/3',
-        '@type': 'Subject',
-        name: 'rich',
-        address: {
-          '@id': '_:ba1',
-          '@type': ['Address'],
-          name: 'address line 1'
+          line1: 'address line 1'
         },
         child: {
           '@id': 'http://id.webshield.io/acme/com/child/1',
-          '@type': 'SubjectType2',
+          '@type': 'EmbeddedSubject',
+          description: 'embedded subject not a privacy graph',
           name: 'child_tasha',
           address: {
-            '@id': '_:ba1',
             '@type': ['Address'],
-            name: 'address line 2'
-          }
-        }
-      }
+            line1: 'address line 2'
+          },
+        },
+      },
+      {
+        '@id': 'http://id.webshield.io/acme/com/2',
+        '@type': ['Subject', 'PrivacyGraph'],
+        name: 'p_rich',
+        description: 'subject, not a privacy graph',
+        address: {
+          '@type': ['Address'],
+          line1: 'p_address line 1'
+        },
+        child: {
+          '@id': 'http://id.webshield.io/acme/com/child/2',
+          '@type': ['EmbeddedSubject', 'PrivacyGraph'],
+          description: 'embedded subject not a privacy graph',
+          name: 'child_tasha',
+          address: {
+            '@type': ['Address'],
+            line1: 'p_address line 2'
+          },
+        },
+      },
     ]
   };
 
-  describe('1 framing tests embedded object', function () {
-    var expandedDoc;
+describe('1 FRAME tests - to understand framing and encode assumptions used by product code', function () {
+  'use strict';
+  let expandedDoc;
 
-    before(function () {
-      var p1 = jsonld.promises.expand(graphEmbeddedSubject);
-      p1.then(
+  before(function () {
+    return jsonld.promises.expand(graphEmbeddedSubject)
+      .then(
         function (expanded) {
           expandedDoc = expanded;
-          console.log('Expanded embedded doc:%j', expandedDoc);
+
+          //console.log('Expanded embedded doc:%j', expandedDoc);
         })
         .catch(
           function (reason) {
             assert.fail(util.format('unexpected error expanding doc: %j', reason));
           }
-        );
-
-      // return promise for mocha to check
-      return p1;
-    });
-
-    it('2.1 find Subjects in document', function () {
-
-      var promiseFramed, promiseUpdated, promiseDone, promiseFlattenedExpanded,
-          frame = {
-            '@embed': 'false',
-            '@type': 'http://acme.schema.webshield.io/type#SubjectType2'
-          };
-
-      promiseFramed = jsonld.promises.frame(expandedDoc, frame);
-      promiseUpdated = promiseFramed
-        .then(function (framed) {
-            var s;
-            console.log('----1.1------framed:%j', framed);
-            framed['@graph'].length.should.be.equal(1);
-            s = framed['@graph'][0];
-            s.should.have.property('@type', frame['@type']);
-            s[context.name] = 'set-name-in-object-from-frame';
-            console.log('----1.1-framed: name:%j after update:%j', s[context.name], framed);
-            console.log('----1.1-Original name:%j after update:%j',
-                        graphEmbeddedSubject['@graph'][0].child.name, graphEmbeddedSubject);
-            return framed;
-          });
-
-      // lets flatten thr original
-      promiseFlattenedExpanded = jsonld.promises.flatten(expandedDoc);
-      promiseDone = promiseFlattenedExpanded
-        .then(function (flattened) {
-          var i;
-          console.log('====flattend expanded:%j', flattened);
-          for (i = 0; i < flattened.length; i++) {
-            console.log('flattened[%s]:%j', i, flattened[i]);
-          }
-
-          // get updated
-          return promiseUpdated
-            .then(function (updated) {
-              var j;
-              console.log('----have updated: %j', updated);
-              console.log('----have updated with flattened: %j', flattened);
-
-              for (j = 0; j < flattened.length; j++) {
-                console.log('+++++++++-matching %s with %j', updated['@graph'][0]['@id'], flattened[j]['@id']);
-                if (flattened[j]['@id'] === updated['@graph'][0]['@id']) {
-                  console.log('+++++++++-MATCHED %s with %s', updated['@graph'][0]['@id'], flattened[j]['@id']);
-                  flattened[j] = updated['@graph'][0];
-                }
-              }
-
-              return flattened;
-            });
-        });
-
-      return promiseDone
-        .then(function (result) {
-          console.log('-----Final result:%j  - orginal:%j', result, expandedDoc);
-        });
-    }); // 2.1
+      );
   });
 
-});
+  it('1.1 Use frame to find all nodes marked as Subject', function () {
+
+    // this will find all nodes that have subject in the type - do not seem
+    // to be able to filter by subject and privacy graph
+    const frame = {
+          '@embed': false, // IMPORTANT this will cause the result to just be ids
+          '@type': ['http://acme.schema.webshield.io/type#Subject']
+        };
+
+    return jsonld.promises.frame(expandedDoc, frame)
+      .then(function (frameResult) {
+
+        //console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
+
+        frameResult.should.have.property('@graph');
+
+        let nodes = frameResult['@graph'];
+        nodes.length.should.be.equal(2);
+        nodes[0].should.have.property('@id');
+        nodes[0].should.not.have.property('@type'); // check just an id
+
+      });
+  }); // 1.1
+
+  it('1.2 Use frame to find the embedded subject and ensure that a copy', function () {
+
+    // IMPORTANT Note as this makes a copy if this is an embedded object
+    // then WILL NOT BE UPDATING THE EMBEDDED ONE IN THE ORGINAL DOCUMENT
+    // HENCE THIS MUST BE FIRST FLATTENED!!!!!!
+    //
+    const frame = {
+          '@embed': true, // this will cause a copy of the object to be made - if false just get back the @id
+          '@type': ['http://acme.schema.webshield.io/type#EmbeddedSubject']
+        };
+
+    return jsonld.promises.frame(expandedDoc, frame)
+      .then(function (frameResult) {
+
+        //console.log(JSON.stringify(frameResult, null, 2));
+
+        frameResult.should.have.property('@graph');
+
+        let nodes = frameResult['@graph'];
+        nodes.length.should.be.equal(2);
+
+        JSONLDUtils.isType(nodes[0], 'http://acme.schema.webshield.io/type#EmbeddedSubject').should.be.equal(true);
+        JSONLDUtils.isType(nodes[1], 'http://acme.schema.webshield.io/type#EmbeddedSubject').should.be.equal(true);
+
+        //
+        // validate that make a copy of node by updating the framed result
+        //
+
+        // check original name is as expected
+        let ochild = expandedDoc[0][context.child][0];
+        ochild[context.name][0]['@value'].should.be.equal('child_tasha');
+
+        // check copy is as expected
+        //console.log(nodes[0]);
+        nodes[0].should.have.property(context.name, 'child_tasha');
+
+        // update copy
+        nodes[0][context.name] = 'new name';
+        nodes[0].should.have.property(context.name, 'new name');
+        ochild[context.name][0]['@value'].should.be.equal('child_tasha');
+
+      });
+  }); // 1.2
+}); // 1
+
+describe('2 FLATTEN tests', function () {
+  'use strict';
+
+  const testSubjects = {
+      '@context': context,
+      '@graph': [
+        {
+          '@id': 'http://id.webshield.io/acme/com/1',
+          '@type': 'Subject',
+          name: 'angus',
+          description: 'subject, not a privacy graph',
+          address: {
+            '@type': ['Address'],
+            line1: 'address line 1'
+          },
+          child: {
+            '@id': 'http://id.webshield.io/acme/com/child/1',
+            '@type': 'Subject',
+            description: 'embedded subject not a privacy graph',
+            name: 'child_tasha',
+            address: {
+              '@type': ['Address'],
+              line1: 'address line 2'
+            },
+          },
+        },
+        {
+          '@id': 'http://id.webshield.io/acme/com/2',
+          '@type': ['Subject'],
+          name: 'jackie',
+          description: 'subject, not a privacy graph',
+          address: {
+            '@type': ['Address'],
+            line1: 'p_address line 1'
+          },
+          child: {
+            '@id': 'http://id.webshield.io/acme/com/child/2',
+            '@type': ['Subject'],
+            description: 'embedded subject not a privacy graph',
+            name: 'child_rebecca',
+            address: {
+              '@type': ['Address'],
+              line1: 'p_address line 2'
+            },
+          },
+        },
+      ]
+    };
+
+  const oSubjects = {
+        '@context': context,
+        '@graph': [
+          {
+            '@id': 'http://id.webshield.io/acme/com/1',
+            '@type': ['Subject', 'PrivacyGraph'],
+            name: [
+              { '@type': 'http://md.pn.id.webdshield.io/paction/com/abc/1',
+                v: 'aes-ct'
+              },
+              { '@type': 'http://md.pn.id.webdshield.io/paction/com/abc/1',
+                v: 'sha256-ct'
+              },
+            ],
+            description: 'A privacy graph',
+            address: {
+              '@type': ['Address'],
+              line1: 'address line 1'
+            },
+          },
+        ]
+      };
+
+  const oSubjects2 = {
+        '@context': context,
+        '@graph': [
+          {
+            '@id': 'http://id.webshield.io/acme/com/2',
+            '@type': ['Subject', 'PrivacyGraph'],
+            name: [
+              { '@type': 'http://md.pn.id.webdshield.io/paction/com/abc/1',
+                v: 'aes-ct2'
+              },
+              { '@type': 'http://md.pn.id.webdshield.io/paction/com/abc/1',
+                v: 'sha256-ct2'
+              },
+            ],
+            description: 'A privacy graph',
+            address: {
+              '@type': ['Address'],
+              line1: 'address line 2'
+            },
+          },
+        ]
+      };
+
+  let expandTestSubjests;
+  let expandoSubjects;
+  let expandoSubjects2;
+
+  before(function () {
+
+    let p1 =  jsonld.promises.expand(testSubjects);
+    let p2 = jsonld.promises.expand(oSubjects);
+    let p3 = jsonld.promises.expand(oSubjects2);
+
+    return Promise.all([p1, p2, p3])
+      .then(
+        function (values) {
+          expandTestSubjests = values[0];
+          expandoSubjects = values[1];
+          expandoSubjects2 = values[2];
+        },
+
+        function (err) {
+          console.log('****ERRROR on expand:%s', err);
+          assert.fail(util.format('unexpected error expanding doc: %j', err));
+        }
+      );
+  });
+
+  it('2.1 Flatten the array of subjects', function () {
+
+    let flattenedGraph;
+
+    //
+    // IMPORTANT THIS FLATTENS BOTH EMBEDDED SUBJECTS AND ADDRESS OBJECTS
+    // ISSUE #1 the addresses are given a blank node id, the issue is that the id is not globally unique
+    // so unless can flatten out if frame with another graph it joins the
+    //
+    let promiseFlatten = jsonld.promises.flatten(expandTestSubjests)
+      .then(function (flattenResult) {
+        //console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        flattenResult.length.should.be.equal(8); // all nodes
+        flattenedGraph = flattenResult;
+        return flattenResult;
+      });
+
+    //
+    // FIND the @id of the nodes in the flattened set that are of type subject
+    //
+    return promiseFlatten.
+      then(function (flattenResult) {
+        const frame = {
+            '@embed': false,
+            '@type': ['http://acme.schema.webshield.io/type#Subject']
+          };
+
+        return jsonld.promises.frame(flattenResult, frame)
+          .then(function (frameResult) {
+            //console.log('**** FRAMMED FLATTENED GRAPH:%s', JSON.stringify(frameResult, null, 2));
+            frameResult['@graph'].length.should.be.equal(4);
+          });
+      });
+  }); // 2.1
+
+  it('2.2 Flatten Privacy Graph and remake with frame', function () {
+
+    let flattenedoSubjects;
+
+    //
+    // IMPORTANT THIS FLATTENS BOTH EMBEDDED SUBJECTS AND ADDRESS OBJECTS
+    // ISSUE #1 the addresses are given a blank node id, the issue is that the id is not globally unique
+    // so unless can flatten out if frame with another graph it joins the
+    //
+    let promiseFlatten = jsonld.promises.flatten(expandoSubjects)
+      .then(function (flattenResult) {
+        //console.log('**** FLATTENED PRIVACY GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        flattenResult.length.should.be.equal(4); // subject, address, two obfuscated values
+        flattenedoSubjects = flattenResult;
+        return flattenResult;
+      });
+
+    //
+    // FRAME to only get the subject node
+    //
+    return promiseFlatten.
+      then(function () {
+        const frame = {
+            '@embed': true,
+            '@type': ['http://acme.schema.webshield.io/type#Subject']
+          };
+
+        return jsonld.promises.frame(flattenedoSubjects, frame)
+          .then(function (frameResult) {
+            //console.log('**** FRAMMED FLATTENED PRIVACY GRAPH:%s', JSON.stringify(frameResult, null, 2));
+            frameResult['@graph'].length.should.be.equal(1);
+          });
+      });
+  }); // 2.2
+
+  it('2.2 Flatten Privacy Graph - show ISSUE with blank node @id being left in', function () {
+
+    let flattenedoSubjects;
+    let flattenedoSubjects2;
+
+    //
+    // IMPORTANT THIS FLATTENS BOTH EMBEDDED SUBJECTS AND ADDRESS OBJECTS
+    // ISSUE #1 the addresses are given a blank node id, the issue is that the id is not globally unique
+    // so unless can flatten out if frame with another graph it joins the
+    //
+    let promiseFlatten = jsonld.promises.flatten(expandoSubjects)
+      .then(function (flattenResult) {
+        console.log('**** FLATTENED PRIVACY GRAPH osubjects:%s', JSON.stringify(flattenResult, null, 2));
+        flattenResult.length.should.be.equal(4); // subject, address, two obfuscated values
+        flattenedoSubjects = flattenResult;
+
+        // flatten osubject2
+        return jsonld.promises.flatten(expandoSubjects2)
+        .then(function (flattenResult2) {
+          console.log('**** FLATTENED PRIVACY GRAPH osubjects2:%s', JSON.stringify(flattenResult2, null, 2));
+          flattenResult2.length.should.be.equal(4); // subject, address, two obfuscated values
+          flattenedoSubjects2 = flattenResult2;
+        });
+      });
+
+    //
+    // FRAME to get the subject nodes from both flattened types]
+    //
+    return promiseFlatten.
+      then(function () {
+        const frame = {
+            '@embed': true,
+            '@explict': false,
+            '@type': ['http://acme.schema.webshield.io/type#Subject']
+          };
+
+        let allNodes = flattenedoSubjects.concat(flattenedoSubjects2);
+        console.log('**** ALL NODES FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(allNodes, null, 2));
+        allNodes.length.should.be.equal(8); // both subjects expanded
+        return jsonld.promises.frame(allNodes, frame)
+          .then(function (frameResult) {
+            console.log('**** FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(frameResult, null, 2));
+            frameResult['@graph'].length.should.be.equal(2);
+
+            // NO NEED TO COMAPCT AS FRAME DOES BUT ADDING TO CHECK
+            return jsonld.promises.compact(frameResult, {}) // no context just want to remove @value and [] on singletons
+              .then(function (compacted) {
+                console.log('**** COMPACTED FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(compacted, null, 2));
+                let anyNode = frameResult['@graph'][0];
+                if (anyNode[context.name][0][context.v].length !== 1) {
+                  //
+                  // ISSUE ISSUE with blank node ids
+                  //
+                  console.log('**********');
+                  console.log('ISSUE ISSUE - frame merged obfuscate values from different nodes this is really really BAD BAD and is due to shared blank node ids!!!!');
+                  console.log('**********');
+                }
+              });
+          });
+      });
+  }); // 2.2
+}); // 2
+
+describe('3 PROCESS tests', function () {
+  'use strict';
+
+  const testSubjects = {
+      '@context': context,
+      '@graph': [
+        {
+          '@id': 'http://id.webshield.io/acme/com/1',
+          '@type': 'Subject',
+          name: 'angus',
+          description: 'subject, not a privacy graph',
+          address: {
+            '@type': ['Address'],
+            name: 'address line 1'
+          },
+          child: {
+            '@id': 'http://id.webshield.io/acme/com/child/1',
+            '@type': 'Subject',
+            description: 'embedded subject not a privacy graph',
+            name: 'child_tasha',
+            address: {
+              '@type': ['Address'],
+              name: 'address line 2'
+            },
+          },
+        },
+        {
+          '@id': 'http://id.webshield.io/acme/com/2',
+          '@type': ['Subject'],
+          name: 'jackie',
+          description: 'subject, not a privacy graph',
+          address: {
+            '@type': ['Address'],
+            name: 'p_address line 1'
+          },
+          child: {
+            '@id': 'http://id.webshield.io/acme/com/child/2',
+            '@type': ['Subject'],
+            description: 'embedded subject not a privacy graph',
+            name: 'child_rebecca',
+            address: {
+              '@type': ['Address'],
+              name: 'p_address line 2'
+            },
+          },
+        },
+      ]
+    };
+  let expandedDoc;
+
+  before(function () {
+    return jsonld.promises.expand(testSubjects)
+      .then(
+        function (expanded) {
+          expandedDoc = expanded;
+
+          //console.log('Expanded embedded doc:%j', expandedDoc);
+        })
+        .catch(
+          function (reason) {
+            assert.fail(util.format('unexpected error expanding doc: %j', reason));
+          }
+      );
+  });
+
+  it('3.1 Flatten the array then process to update, them frame to put them back how was', function () {
+
+    let flattenedGraph;
+
+    //
+    // IMPORTANT THIS FLATTENS BOTH EMBEDDED SUBJECTS AND ADDRESS OBJECTS
+    //
+    let promiseFlatten = jsonld.promises.flatten(expandedDoc)
+      .then(function (flattenResult) {
+        console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        flattenResult.length.should.be.equal(8); // all nodes
+        flattenedGraph = flattenResult;
+        return flattenResult;
+      });
+
+    //
+    // IMPORTANT WHEN FRAMED THE DATA IT UNFLATTENED THE ADDRESS NODES AND
+    // EMBEDS INTO THE EMBEDDED SUBJECT NODES
+    //
+    return promiseFlatten.
+      then(function (flattenResult) {
+        const frame = {
+            '@embed': false,
+            '@type': ['http://acme.schema.webshield.io/type#Subject']
+          };
+
+        return jsonld.promises.frame(flattenResult, frame)
+          .then(function (frameResult) {
+            console.log('**** FRAMMED FLATTENED GRAPH:%s', JSON.stringify(frameResult, null, 2));
+
+            //
+            // Update the names to be cipher-text
+            //
+            let nodes = frameResult['@graph'];
+            nodes.length.should.be.equal(4);
+
+            for (let i = 0; i < nodes.length; i++) {
+              nodes[i].should.have.property('@id');
+              for (let j = 0; j < flattenedGraph.length; j++) {
+                flattenedGraph[j].should.have.property('@id');
+                if (nodes[i]['@id'] === flattenedGraph[j]['@id']) {
+                  console.log('***FOUND NODE TO UPDATE:%s', nodes[i]['@id']);
+                  flattenedGraph[j][context.name] = 'cipher-text--' + JSONLDUtils.getV(flattenedGraph[j], context.name);
+                  console.log(flattenedGraph[j]);
+                }
+              }
+            }
+
+            //
+            // Finally lets reframe the subjects, and embedded the data back to
+            // where it was.
+            //
+            const frameAll = {
+                '@embed': true,
+                '@type': ['http://acme.schema.webshield.io/type#Subject']
+              };
+
+            return jsonld.promises.frame(flattenResult, frameAll)
+              .then(function (finalResult) {
+                //
+                // Iterate over the top level subjects marking them as Privacy Graphs
+                console.log('**** FINAL_RESULT GRAPH:%s', JSON.stringify(finalResult, null, 2));
+              });
+
+          });
+      });
+  }); // 3.1
+}); // 3

@@ -10,7 +10,7 @@ var assert = require('assert'),
     //jsonldUtils = require('../lib/jldUtils'),
     util = require('util');
 
-describe('jsonld npm library learnings', function () {
+describe('LEARN jsonld npm library learnings', function () {
   'use strict';
 
   let context = {
@@ -46,12 +46,12 @@ describe('jsonld npm library learnings', function () {
     ]
   };
 
-  console.log('Base doc:%j', doc);
+  //console.log('Base doc:%j', doc);
 
   describe('1 expand tests', function () {
 
     function checkExpanded(exp) {
-      console.log('checkExpanded:%j', exp);
+      //console.log('checkExpanded:%j', exp);
       exp.length.should.be.equal(2);
       exp[0].should.have.property('@id');
       exp[0].should.have.property('@type');
@@ -61,7 +61,7 @@ describe('jsonld npm library learnings', function () {
     // note how return the promise and do not use a done method :)
     it('1.1 expand using a promise', function () {
       let p1 = new Promise(function (resolve, reject) {
-        console.log('setting up promise');
+        //console.log('setting up promise');
         jsonld.expand(doc, function (err, expanded) {
           if (err) {
             reject(err);
@@ -71,10 +71,10 @@ describe('jsonld npm library learnings', function () {
         });
       });
 
-      console.log('setting up promise then and catch');
+      //console.log('setting up promise then and catch');
       let p2 = p1.then(
         function (value) { // ok
-          console.log('expanded1.1: %j', value);
+          //console.log('expanded1.1: %j', value);
           checkExpanded(value);
         },
 
@@ -86,7 +86,7 @@ describe('jsonld npm library learnings', function () {
       // setup p2 to catch any error in succesful processing
       p2.catch(
         function (reason) { // error in then ok
-          console.log('p2.catch: %s', reason);
+          //console.log('p2.catch: %s', reason);
           assert.fail(util.format('1.1 Unexpected error when processing a successful expand:%s', reason));
         });
 
@@ -98,7 +98,7 @@ describe('jsonld npm library learnings', function () {
       let p1 = jsonld.promises.expand(doc);
       p1.then(
         function (expanded) {
-          console.log('expanded 1.2: %j', expanded);
+          //console.log('expanded 1.2: %j', expanded);
           checkExpanded(expanded);
         })
         .catch(
@@ -117,45 +117,36 @@ describe('jsonld npm library learnings', function () {
     let expandedDoc;
 
     before(function () {
-      let p1 = jsonld.promises.expand(doc);
-      p1.then(
-        function (expanded) {
-          console.log('2. framing - before - expanded : %j', expanded);
-          expandedDoc = expanded;
-        })
+      return jsonld.promises.expand(doc)
+        .then(
+          function (expanded) {
+            expandedDoc = expanded;
+          })
         .catch(
           function (reason) {
-            assert.fail(util.format('unexpected error expanding doc: %j', reason));
+            assert.fail(util.format('2.before unexpected error expanding doc: %s', reason));
           }
         );
-
-      // return promise for mocha to check
-      return p1;
     });
 
     it('2.1 find Subjects in document', function () {
 
-      var p1,
-          frame = {
-            '@embed': 'false',
+      const frame = {
+            '@embed': true,
             '@type': 'http://acme.schema.webshield.io/type#Subject'
           };
 
-      p1 = jsonld.promises.frame(expandedDoc, frame);
-      p1.then(
-        function (framed) {
-          var s;
-          console.log('2.1 framed:%j', framed);
-          s['@graph'].length.should.be.equal(1);
-          s = framed['@graph'][0];
-          s.should.have.property('@type', frame['@type']);
-        })
-      .catch(
-        function (reason) {
-          assert.fail(util.format('unexpected error expanding doc: %j', reason));
-        });
-
-      return p1;
+      return jsonld.promises.frame(expandedDoc, frame)
+        .then(
+          function (framed) {
+            framed['@graph'].length.should.be.equal(1);
+            let s = framed['@graph'][0];
+            s.should.have.property('@type', frame['@type']);
+          })
+        .catch(
+          function (reason) {
+            assert.fail(util.format('2.1 unexpected error expanding doc: %s', reason));
+          });
     }); // 2.1
   });
 
@@ -191,45 +182,37 @@ describe('jsonld npm library learnings', function () {
     var expandedDoc;
 
     before(function () {
-      var p1 = jsonld.promises.expand(namedGraph);
-      p1.then(
-        function (expanded) {
-          console.log('3. framing - before - expanded : %j', expanded);
-          expandedDoc = expanded;
-        })
-        .catch(
-          function (reason) {
-            assert.fail(util.format('unexpected error expanding doc: %j', reason));
-          }
-        );
-
-      // return promise for mocha to check
-      return p1;
+      return jsonld.promises.expand(namedGraph)
+        .then(
+          function (expanded) {
+            expandedDoc = expanded;
+          })
+          .catch(
+            function (reason) {
+              assert.fail(util.format('unexpected error expanding doc: %j', reason));
+            }
+          );
     });
 
     it('3.1 find Subjects in document', function () {
 
-      var p1,
-          frame = {
+      const frame = {
             '@embed': 'false',
             '@type': 'http://acme.schema.webshield.io/type#Subject'
           };
 
-      p1 = jsonld.promises.frame(expandedDoc, frame);
-      p1.then(
-        function (framed) {
-          var s;
-          console.log('3.1 framed:%j', framed);
-          s['@graph'].length.should.be.equal(1);
-          s = framed['@graph'][0];
-          s.should.have.property('@type', frame['@type']);
-        })
-      .catch(
-        function (reason) {
-          assert.fail(util.format('unexpected error expanding doc: %j', reason));
-        });
-
-      return p1;
+      return jsonld.promises.frame(expandedDoc, frame)
+        .then(
+          function (framed) {
+            //console.log('3.1 framed:%j', framed);
+            framed['@graph'].length.should.be.equal(1);
+            let s = framed['@graph'][0];
+            s.should.have.property('@type', frame['@type']);
+          })
+        .catch(
+          function (reason) {
+            assert.fail(util.format('3.1 unexpected error expanding doc: %j', reason));
+          });
     }); // 3.1
   });
 
