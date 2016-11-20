@@ -401,20 +401,21 @@ describe('2 FLATTEN tests', function () {
         allNodes.length.should.be.equal(8); // both subjects expanded
         return jsonld.promises.frame(allNodes, frame)
           .then(function (frameResult) {
-            console.log('**** FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(frameResult, null, 2));
+            //console.log('**** FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(frameResult, null, 2));
             frameResult['@graph'].length.should.be.equal(2);
 
             // NO NEED TO COMAPCT AS FRAME DOES BUT ADDING TO CHECK
             return jsonld.promises.compact(frameResult, {}) // no context just want to remove @value and [] on singletons
               .then(function (compacted) {
-                console.log('**** COMPACTED FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(compacted, null, 2));
-                let anyNode = frameResult['@graph'][0];
+                //console.log('**** COMPACTED FRAMMED FLATTENED PRIVACY GRAPH osubject and osubjects2:%s', JSON.stringify(compacted, null, 2));
+                let anyNode = compacted['@graph'][0];
                 if (anyNode[context.name][0][context.v].length !== 1) {
                   //
                   // ISSUE ISSUE with blank node ids
                   //
                   console.log('**********');
-                  console.log('ISSUE ISSUE - frame merged obfuscate values from different nodes this is really really BAD BAD and is due to shared blank node ids!!!!');
+                  console.log('ISSUE ISSUE ISSUE - Frame operation adds non globally unqiue @id to blank nodes and cannot remove !!!');
+                  console.log('HENCE IF PERFORM A FRAME ON TWO DIFFRENT SUBJECT NODES FROM TWO DIFFRENT GRAPHS THE BLANK NODES GET MERGED AS HAVE SAME @ID!!!! I WILL NEED TO WRITE CODE TO CORRECT');
                   console.log('**********');
                 }
               });
@@ -497,7 +498,7 @@ describe('3 PROCESS tests', function () {
     //
     let promiseFlatten = jsonld.promises.flatten(expandedDoc)
       .then(function (flattenResult) {
-        console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        //console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
         flattenResult.length.should.be.equal(8); // all nodes
         flattenedGraph = flattenResult;
         return flattenResult;
@@ -516,7 +517,7 @@ describe('3 PROCESS tests', function () {
 
         return jsonld.promises.frame(flattenResult, frame)
           .then(function (frameResult) {
-            console.log('**** FRAMMED FLATTENED GRAPH:%s', JSON.stringify(frameResult, null, 2));
+            //console.log('**** FRAMMED FLATTENED GRAPH:%s', JSON.stringify(frameResult, null, 2));
 
             //
             // Update the names to be cipher-text
@@ -529,9 +530,10 @@ describe('3 PROCESS tests', function () {
               for (let j = 0; j < flattenedGraph.length; j++) {
                 flattenedGraph[j].should.have.property('@id');
                 if (nodes[i]['@id'] === flattenedGraph[j]['@id']) {
-                  console.log('***FOUND NODE TO UPDATE:%s', nodes[i]['@id']);
+                  //console.log('***FOUND NODE TO UPDATE:%s', nodes[i]['@id']);
                   flattenedGraph[j][context.name] = 'cipher-text--' + JSONLDUtils.getV(flattenedGraph[j], context.name);
-                  console.log(flattenedGraph[j]);
+
+                  //console.log(flattenedGraph[j]);
                 }
               }
             }
@@ -549,7 +551,13 @@ describe('3 PROCESS tests', function () {
               .then(function (finalResult) {
                 //
                 // Iterate over the top level subjects marking them as Privacy Graphs
-                console.log('**** FINAL_RESULT GRAPH:%s', JSON.stringify(finalResult, null, 2));
+                //console.log('**** FINAL_RESULT GRAPH:%s', JSON.stringify(finalResult, null, 2));
+                // ISSUE
+                // ISSUE
+                finalResult['@graph'].length.should.be.equal(4);
+                console.log('**********');
+                console.log('ISSUE ISSUE - EMBEDDED CHILD SUBJECTS ARE BOTH EMBEDDED AND AT THE TOP LEVEL, SO DOUBLED WHY ?!!!!');
+                console.log('**********');
               });
 
           });
