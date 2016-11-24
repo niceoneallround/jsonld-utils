@@ -12,6 +12,7 @@ const assert = require('assert');
 const should = require('should');
 const jsonld = require('jsonld');
 const JSONLDUtils = require('../lib/jldUtils').npUtils;
+const JSONLDPromises = require('../lib/jldUtils').promises;
 const util = require('util');
 
 let context = {
@@ -106,14 +107,14 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
     // this will find all nodes that have subject in the type - do not seem
     // to be able to filter by subject and privacy graph
     const frame = {
-          '@embed': true, // IMPORTANT this will cause the result to just be ids
+          '@embed': true,  // this will cause a copy of the object to be made - if false just get back the @id
           '@type': ['http://acme.schema.webshield.io/type#Subject']
         };
 
     return jsonld.promises.frame(expandedDoc, frame)
       .then(function (frameResult) {
 
-        console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
+        //console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
 
         frameResult.should.have.property('@graph');
 
@@ -139,7 +140,7 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
     return jsonld.promises.frame(expandedDoc, frame)
       .then(function (frameResult) {
 
-        console.log('***FRAMED with EMBEDDED:%s', JSON.stringify(frameResult, null, 2));
+        //console.log('***FRAMED with EMBEDDED:%s', JSON.stringify(frameResult, null, 2));
 
         frameResult.should.have.property('@graph');
 
@@ -168,6 +169,25 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
 
       });
   }); // 1.2
+
+  it('1.3 test thins frame wrapper works marked as Subject', function () {
+
+    // this will find all nodes that have subject in the type, and just return @id
+    console.log(expandedDoc);
+    return JSONLDPromises.frame(expandedDoc, 'http://acme.schema.webshield.io/type#Subject', false)
+      .then(function (frameResult) {
+
+        //console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
+
+        frameResult.should.have.property('@graph');
+
+        let nodes = frameResult['@graph'];
+        nodes.length.should.be.equal(2);
+        nodes[0].should.have.property('@id');
+        nodes[0].should.not.have.property('@type'); // check just an id
+
+      });
+  }); // 1.3
 }); // 1
 
 describe('2 FLATTEN tests', function () {
