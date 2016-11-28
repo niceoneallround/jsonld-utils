@@ -10,7 +10,6 @@
 //
 const assert = require('assert');
 const should = require('should');
-const jsonld = require('jsonld');
 const JSONLDPromises = require('../lib/jldUtils').promises;
 const util = require('util');
 
@@ -31,7 +30,7 @@ let context = {
   PrivacyGraph: 'https://pn.schema.webshield.io/type#PrivacyGraph',
 };
 
-describe('1 FLATTEN tests using light weight jsonld flatten wrapper', function () {
+describe('1 FLATTENlw tests using light weight jsonld flatten wrapper', function () {
   'use strict';
 
   const testSubjects = {
@@ -80,16 +79,16 @@ describe('1 FLATTEN tests using light weight jsonld flatten wrapper', function (
       ]
     };
 
-  let expandTestSubjests;
+  let expandCompactTestSubjests;
 
   before(function () {
 
-    let p1 =  jsonld.promises.expand(testSubjects);
+    let p1 =  JSONLDPromises.expandCompact(testSubjects);
 
     return Promise.all([p1])
       .then(
         function (values) {
-          expandTestSubjests = values[0];
+          expandCompactTestSubjests = values[0];
         },
 
         function (err) {
@@ -106,9 +105,9 @@ describe('1 FLATTEN tests using light weight jsonld flatten wrapper', function (
     // ISSUE #1 the addresses are given a blank node id, the issue is that the id is not globally unique
     // so unless can flatten out if frame with another graph it joins the
     //
-    return JSONLDPromises.flatten(expandTestSubjests)
+    return JSONLDPromises.flatten(expandCompactTestSubjests)
       .then(function (flattenResult) {
-        //console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        console.log('**** FLATTENEDlw GRAPH:%s', JSON.stringify(flattenResult, null, 2));
         flattenResult.length.should.be.equal(8); // all nodes
         return flattenResult;
       });
