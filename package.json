@@ -1,10 +1,11 @@
 {
   "name": "jsonld-utils",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Helpers when processing JSONLD graphs with the jsonld library",
   "main": "none",
   "scripts": {
-    "test": "gulp test"
+    "test": "gulp test",
+    "build": "gulp test"
   },
   "repository": {
     "type": "git",
