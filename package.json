@@ -1,6 +1,6 @@
 {
   "name": "jsonld-utils",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Helpers when processing JSONLD graphs with the jsonld library",
   "main": "none",
   "scripts": {
