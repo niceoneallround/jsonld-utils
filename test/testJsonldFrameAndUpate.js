@@ -188,6 +188,37 @@ describe('1 FRAME tests - to understand framing and encode assumptions used by p
 
       });
   }); // 1.3
+
+  it('1.4 test fame with OV to make sure works, the pau must be a URL', function () {
+
+    let subject1 = {
+      '@id': 'https://id.webshield.io/com/abc/alice_abc',
+      '@type': 'https://subject.pn.schema.webshield.io/type#Subject',
+      'https://schema.org/givenName': { '@type': 'http://paId-1', '@value': 'n1..v1' },
+      'https://schema.org/familyName': { '@type': 'http://paId-1', '@value': 'n1..v1' },
+      'http://pn.schema.webshield.io/prop#sourceID': 'alice_abc',
+      'https://schema.org/taxID': 'alice_abc_ssn',
+      'https://schema.org/address': {
+        '@id': 'https://id.webshield.io/not-set/address#1',
+        '@type': ['https://schema.org/PostalAddress'],
+        'https://schema.org/postalCode': { '@type': 'http://paId-1', '@value': 'n1..v1' } } };
+
+    // this will find all nodes that have subject in the type, and just return @id
+    console.log(expandedDoc);
+    return JSONLDPromises.frame(subject1, 'https://subject.pn.schema.webshield.io/type#Subject', false)
+      .then(function (frameResult) {
+
+        //console.log('***FRAMED:%s', JSON.stringify(frameResult, null, 2));
+
+        frameResult.should.have.property('@graph');
+
+        let nodes = frameResult['@graph'];
+        nodes.length.should.be.equal(1);
+        nodes[0].should.have.property('@id');
+        nodes[0].should.not.have.property('@type'); // check just an id
+
+      });
+  }); // 1.4
 }); // 1
 
 describe('2 FLATTEN tests', function () {
