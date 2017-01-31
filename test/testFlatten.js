@@ -37,20 +37,22 @@ describe('1 FLATTENlw tests using light weight jsonld flatten wrapper', function
       '@context': context,
       '@graph': [
         {
-          '@id': 'http://id.webshield.io/acme/com/1',
+          '@id': 'http://id.webshield.io/com/acme/1',
           '@type': 'Subject',
           name: 'angus',
           description: 'subject, not a privacy graph',
           address: {
+            '@id': 'http://id.webshield.io/com/acme/address/1_1',
             '@type': ['Address'],
             line1: 'address line 1'
           },
           child: {
-            '@id': 'http://id.webshield.io/acme/com/child/1',
+            '@id': 'http://id.webshield.io/com/acme/child/1',
             '@type': 'Subject',
             description: 'embedded subject not a privacy graph',
             name: 'child_tasha',
             address: {
+              '@id': 'http://id.webshield.io/com/acme/address/1_2',
               '@type': ['Address'],
               line1: 'address line 2'
             },
@@ -62,6 +64,7 @@ describe('1 FLATTENlw tests using light weight jsonld flatten wrapper', function
           name: 'jackie',
           description: 'subject, not a privacy graph',
           address: {
+            '@id': 'http://id.webshield.io/com/acme/2_1',
             '@type': ['Address'],
             line1: 'p_address line 1'
           },
@@ -71,6 +74,7 @@ describe('1 FLATTENlw tests using light weight jsonld flatten wrapper', function
             description: 'embedded subject not a privacy graph',
             name: 'child_rebecca',
             address: {
+              '@id': 'http://id.webshield.io/com/acme/2_2',
               '@type': ['Address'],
               line1: 'p_address line 2'
             },
@@ -107,9 +111,18 @@ describe('1 FLATTENlw tests using light weight jsonld flatten wrapper', function
     //
     return JSONLDPromises.flatten(expandCompactTestSubjests)
       .then(function (flattenResult) {
-        console.log('**** FLATTENEDlw GRAPH:%s', JSON.stringify(flattenResult, null, 2));
+        console.log('**** FLATTENED GRAPH:%s', JSON.stringify(flattenResult, null, 2));
         flattenResult.length.should.be.equal(8); // all nodes
         return flattenResult;
       });
   }); // 1.1
+
+  it('1.2 Flatten and then compact the array of subjects - as flatten expands', function () {
+
+    return JSONLDPromises.flattenCompact(expandCompactTestSubjests)
+      .then(function (result) {
+        console.log('**** FLATTENED-COMPACTED GRAPH:%s', JSON.stringify(result, null, 2));
+        result['@graph'].length.should.be.equal(8); // all nodes
+      });
+  }); // 1.2
 }); // 1
