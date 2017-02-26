@@ -49,7 +49,7 @@ let context = {
 describe('1 EXPAND test and ensure assumptions', function () {
   'use strict';
 
-  it('1.1 Expand and check that no blank @ids are added', function () {
+  it('1.1 should expand and not add any blank node @ids', function () {
 
     const subject1 = {
       '@context': context,
@@ -84,7 +84,7 @@ describe('1 EXPAND test and ensure assumptions', function () {
       });
   }); // 1.1
 
-  it('1.1 Expand/Compact and check that no blank @ids are added', function () {
+  it('1.2 should Expand/Compact and not add any blank nodes', function () {
 
     const subject1 = {
       '@id': 'http://id.webshield.io/acme/com/1',
@@ -110,6 +110,62 @@ describe('1 EXPAND test and ensure assumptions', function () {
         result.should.have.property(context.givenName, 'rich'); // check values do not have @value
         result[context.address].should.not.have.property('@id'); // check embedded types have not been assigned a blank node @id
       });
-  }); // 1.1
+  }); // 1.2
+
+  it('1.3 should expand/compact without any errors - this was a bug so checking', function () {
+
+    const context13 = {
+      id: '@id',
+      type: '@type',
+      MINE_T: 'https://query.com.schema.webshield.io/type#',
+      MINE_P: 'https://query.com.schema.webshield.io/prop#',
+      PN_P: 'http://pn.schema.webshield.io/prop#',
+      PN_T: 'http://pn.schema.webshield.io/type#',
+      schema: 'https://schema.org/',
+      givenName: 'schema:givenName',
+      familyName: 'schema:familyName',
+      taxID: 'schema:taxID',
+    };
+
+    const data = {
+      '@id': 'https://pn.id.webshield.io/query/100/99/168/192#e2e-query-by-id',
+      '@type': 'https://pn.schema.webshield.io/type#SubjectQuery',
+      'https://pn.schema.webshield.io/prop#query_nodes': [
+        {
+          '@id': '_:25236e5e-35b7-43cf-9bb3-339eeaefc17d',
+          '@type': [
+            'https://pn.schema.webshield.io/type#QueryNode'
+          ],
+          'https://pn.schema.webshield.io/prop#query_result_graph_node': 'bob',
+          'https://pn.schema.webshield.io/prop#params': {
+            '@id': 'https://pn.id.webshield.io/query_restriction/100/99/168/192#1488149493-1',
+            '@type': 'https://pn.schema.webshield.io/type#SubjectQueryRestriction',
+            'https://pn.schema.webshield.io/prop#subjectID': 'https://acme.come/members/bob'
+          },
+          'https://pn.schema.webshield.io/prop#properties': {
+            familyName: '',
+            givenName: '',
+            taxID: '',
+          },
+        },
+      ]
+    };
+
+    let optionsMap = new Map();
+    optionsMap.set('@context', context13);
+    return JSONLDUtils.promises.expandCompact(data, optionsMap)
+      .then(function (result) {
+        console.log('***EXPANDED/Compact:%s', JSON.stringify(result, null, 2));
+
+        //  check ASSUMPTIONS used by code
+        result.should.have.property('@id');
+        result.should.have.property('@type');
+        result.should.have.property('https://pn.schema.webshield.io/prop#query_nodes');
+        result['https://pn.schema.webshield.io/prop#query_nodes'].should.have.property('https://pn.schema.webshield.io/prop#properties');
+
+        let properties = result['https://pn.schema.webshield.io/prop#query_nodes']['https://pn.schema.webshield.io/prop#properties'];
+        properties.should.have.property(context.givenName, '');
+      });
+  }); // 1.2
 
 }); // 1
