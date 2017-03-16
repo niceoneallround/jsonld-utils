@@ -172,5 +172,40 @@ describe('2 BUG test', function () {
         throw err;
       });
   }); // 2.1
-
 }); // 2
+
+describe('3 Ensure that compact with no context acts as expected', function () {
+  'use strict';
+
+  it('3.1 should compact the data', function () {
+
+    const subject1 = {
+      '@id': 'http://id.webshield.io/acme/com/1',
+      '@type': 'https://pn.schema.webshield.io/type#Subject',
+      'https://schema.org/givenName': ['rich'], // should remove array
+      'https://pn.schema.webshield.io/prop#sourceID': 'a-id',
+      'https://schema.org/email': { '@value': 'a_email', },
+      'https://schema.org/address': {
+        '@type': 'https://schema.org/PostalAddress',
+        'https://schema.org/addressRegion': 'SF',
+      },
+    };
+
+    return JSONLDPromises.compact(subject1, {})
+      .then(function (compacted) {
+        //console.log('***COMPACTED:%s', JSON.stringify(compacted, null, 2));
+
+        compacted.should.not.have.property('@context');
+        compacted.should.have.property('@id');
+        compacted.should.have.property('@type', 'https://pn.schema.webshield.io/type#Subject');
+        compacted.should.have.property('https://schema.org/givenName', 'rich');
+        compacted.should.have.property('https://schema.org/email', 'a_email');
+        compacted.should.have.property('https://schema.org/address');
+      },
+
+      function  (err) {
+        console.log('TEST-FAILED', err);
+        throw err;
+      });
+  }); // 3.1
+}); // describe 3
