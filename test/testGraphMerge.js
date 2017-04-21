@@ -262,10 +262,10 @@ describe('1 Validate thta frame can merge two graphs as expected', function () {
       },
     };
 
-    const expandedDoc = { '@graph': [pg1, pg2, pg3] };
+    const graphs = { '@graph': [pg1, pg2, pg3] };
     const types = [COMMON_TYPE];
 
-    return JSONLDPromises.frame(expandedDoc, types, EMBED) // embed
+    return JSONLDPromises.frame(graphs, types, EMBED) // embed
       .then(function (frameResult) {
         console.log('***FRAMED RESULT:%s', JSON.stringify(frameResult, null, 2));
 
